@@ -1,4 +1,6 @@
-To run
+Based on: https://github.com/11ty/eleventy-base-blog
+
+### To run
 
 Install dependencies
 ```shell
