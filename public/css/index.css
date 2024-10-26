@@ -10,13 +10,12 @@
 	--color-gray-50: #C0C0C0;
 	--color-gray-90: #dad8d8;
 
-	--background-color: #15202b;
+	--background-color: #1f1f1f;
 
-	--text-color: var(--color-gray-90);
-	--text-color-link: #1493fb;
-	--text-color-link-active: #6969f7;
-	--text-color-link-visited: #a6a6f8;
-
+	--text-color: #dcdccc;
+	--text-color-link: #e3ceab;
+	--text-color-link-active: #ecbcbc;
+	--text-color-link-visited: #e3ceab;
 	--syntax-tab-size: 2;
 }
 
@@ -92,6 +91,11 @@ header:after {
 	content: "";
 	display: table;
 	clear: both;
+}
+
+footer {
+	color: var(--color-gray-20);
+	font-size: x-small;
 }
 
 .links-nextprev {
