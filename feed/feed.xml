@@ -15,8 +15,7 @@
     <link href="https://blog.sarakvasa.com/blog/0001-post/" />
     <updated>2024-10-26T00:00:00Z</updated>
     <id>https://blog.sarakvasa.com/blog/0001-post/</id>
-    <content type="html">&lt;h2 id=&quot;inception&quot;&gt;Inception&lt;/h2&gt;
-&lt;p&gt;One day, after spending some hour(s) investigating how to flash my Zigbee coordinator, I thought
+    <content type="html">&lt;p&gt;One day, after spending some hour(s) investigating how to flash my Zigbee coordinator, I thought
 it might be a good idea to have a memo somewhere to keep track of the things I learned.
 Shared memo indeed, so, that other people could find it and spend less time searching for the same.&lt;/p&gt;
 &lt;p&gt;In short, the idea is to create an archive which will be just a log of my findings, thoughts, and ideas.&lt;/p&gt;
