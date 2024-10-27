@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="pretty-atom-feed.xsl" type="text/xsl"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+  <title>Roman&#39;s tech blog</title>
+  <subtitle>I am writing here about my tech findings.</subtitle>
+  <link href="https://blog.sarakvasa.com/eleventy-base-blog/feed/feed.xml" rel="self" />
+  <link href="https://blog.sarakvasa.com/eleventy-base-blog/" />
+  <updated>2024-10-26T00:00:00Z</updated>
+  <id>https://blog.sarakvasa.com/eleventy-base-blog/</id>
+  <author>
+    <name>Roman Sarakvasa</name>
+  </author>
+  <entry>
+    <title>Inception.</title>
+    <link href="https://blog.sarakvasa.com/eleventy-base-blog/blog/0001-post/" />
+    <updated>2024-10-26T00:00:00Z</updated>
+    <id>https://blog.sarakvasa.com/eleventy-base-blog/blog/0001-post/</id>
+    <content type="html">&lt;h2 id=&quot;inception&quot;&gt;Inception&lt;/h2&gt;
+&lt;p&gt;One day, after spending some hour(s) investigating how to flash my Zigbee coordinator, I thought
+it might be a good idea to have a memo somewhere to keep track of the things I learned.
+Shared memo indeed, so, that other people could find it and spend less time searching for the same.&lt;/p&gt;
+&lt;p&gt;In short, the idea is to create an archive which will be just a log of my findings, thoughts, and ideas.&lt;/p&gt;
+&lt;p&gt;If anyone is interested in anything I write here and have questions, feedback, whatever, feel free to contact
+&lt;a href=&quot;https://blog.sarakvasa.com/eleventy-base-blog/blog/0001-post/&quot; data-a=&quot;ma&quot; data-b=&quot;ilto:&quot; data-c=&quot;rom&quot; data-d=&quot;an@sarak&quot; data-e=&quot;vasa.c&quot; data-f=&quot;om&quot; onclick=&quot;window.location.href = this.dataset.a+this.dataset.b+this.dataset.c+this.dataset.d+this.dataset.e+this.dataset.f; return false;&quot;&gt;me&lt;a&gt;.&lt;/a&gt;&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;Let us see how it goes...&lt;/p&gt;
+</content>
+  </entry>
+</feed>
