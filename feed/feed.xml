@@ -5,11 +5,88 @@
   <subtitle>I am writing here about my tech findings.</subtitle>
   <link href="https://blog.sarakvasa.com/feed/feed.xml" rel="self" />
   <link href="https://blog.sarakvasa.com/" />
-  <updated>2024-10-26T00:00:00Z</updated>
+  <updated>2024-10-27T00:00:00Z</updated>
   <id>https://blog.sarakvasa.com/</id>
   <author>
     <name>Roman Sarakvasa</name>
   </author>
+  <entry>
+    <title>Tech stack for this blog</title>
+    <link href="https://blog.sarakvasa.com/blog/0002-post/" />
+    <updated>2024-10-27T00:00:00Z</updated>
+    <id>https://blog.sarakvasa.com/blog/0002-post/</id>
+    <content type="html">&lt;p&gt;So, &lt;a href=&quot;https://blog.sarakvasa.com/blog/001-post.md&quot;&gt;the blog&lt;/a&gt; is started. To decide on the tech stack, I had the following points to match:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;I am familiar with hosting on GitHub Pages, therefore the site should be static, not using any server-side language nor database.&lt;/li&gt;
+&lt;li&gt;For writing text, I&#39;d like something simple and easy to use. Markdown with code snippet highlight should be fine.&lt;/li&gt;
+&lt;li&gt;Overall solution should be simple to understand, easy to configure and preferably lightweight.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;After some research, I decided to use &lt;a href=&quot;https://www.11ty.dev/&quot;&gt;Eleventy&lt;/a&gt; as a static site generator. It seems to match all my points.
+One huge pro for the 11ty is that had a &lt;a href=&quot;https://github.com/11ty/eleventy-base-blog&quot;&gt;base blog repository&lt;/a&gt; which I could fork and start using right away.
+It is pretty straightforward to use. &lt;a href=&quot;https://en.wikipedia.org/wiki/File_(tool)&quot;&gt;Filing&lt;/a&gt; here and there, adjusting CSS, removing things I don&#39;t need, and voilà, the blog is ready.
+You are reading it right now.&lt;/p&gt;
+&lt;h2 id=&quot;set-up-quirks&quot;&gt;Set-up quirks&lt;/h2&gt;
+&lt;p&gt;Base-blog is a great starting point, still there were some quirks setting it up.&lt;/p&gt;
+&lt;h3 id=&quot;11ty-path-prefix&quot;&gt;11ty path prefix&lt;/h3&gt;
+&lt;p&gt;First, when GitHub workflow bundled into the base blog builds the site,
+it uses &lt;code&gt;/eleventy-base-blog/&lt;/code&gt; directory by default and I wanted to serve it just from the root &lt;code&gt;/&lt;/code&gt;.
+To fix this, I had to adjust the &lt;code&gt;pathprefix&lt;/code&gt; in the &lt;code&gt;package.json&lt;/code&gt;:&lt;/p&gt;
+&lt;pre class=&quot;language-diff&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-diff&quot;&gt;&lt;span class=&quot;token deleted-sign deleted&quot;&gt;&lt;span class=&quot;token prefix deleted&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token line&quot;&gt;&quot;build-ghpages&quot;: &quot;npx @11ty/eleventy --pathprefix=/eleventy-base-blog/&quot;,
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token inserted-sign inserted&quot;&gt;&lt;span class=&quot;token prefix inserted&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;token line&quot;&gt;&quot;build-ghpages&quot;: &quot;npx @11ty/eleventy --pathprefix=/&quot;,
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;custom-domain&quot;&gt;Custom domain&lt;/h3&gt;
+&lt;p&gt;Second, and it is not 11ty related, is how to set up custom subdomain in GitHub Pages.
+The GitHub part is straightforward, just specify the branch to serve from (&lt;code&gt;gh-pages&lt;/code&gt; if you use bundled workflow)
+and the name of your custom domain (&lt;code&gt;blog.srakvasa.com&lt;/code&gt; in my case).&lt;/p&gt;
+&lt;p&gt;What was not so straightforward is how to set up the DNS records in the domain provider.
+Luckily, GitHub it is pretty easy in fact. So, I have 2 repositories one for main site and one for this blog.
+The main site is called &lt;code&gt;nut-neek.github.io&lt;/code&gt; and the blog is called &lt;code&gt;xblog&lt;/code&gt;.
+The DNS records should look the following:&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;Type&lt;/th&gt;
+&lt;th&gt;Host&lt;/th&gt;
+&lt;th&gt;Value&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;A Record&lt;/td&gt;
+&lt;td&gt;@&lt;/td&gt;
+&lt;td&gt;185.199.108.153&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;A Record&lt;/td&gt;
+&lt;td&gt;@&lt;/td&gt;
+&lt;td&gt;185.199.109.153&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;A Record&lt;/td&gt;
+&lt;td&gt;@&lt;/td&gt;
+&lt;td&gt;185.199.110.153&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;A Record&lt;/td&gt;
+&lt;td&gt;@&lt;/td&gt;
+&lt;td&gt;185.199.111.153&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CNAME&lt;/td&gt;
+&lt;td&gt;www&lt;/td&gt;
+&lt;td&gt;nut-neek.github.io.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;CNAME&lt;/td&gt;
+&lt;td&gt;blog&lt;/td&gt;
+&lt;td&gt;nut-neek.github.io.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;First 5 records I already had for the main site. What was confusing to me is that the only thing I had to add on top was the last record.
+No more A records, just one more CNAME record pointing to the &lt;strong&gt;same&lt;/strong&gt; domain as &lt;code&gt;www&lt;/code&gt;. Further routing seems to be done by GitHub itself based on the Pages setup.&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>Inception.</title>
     <link href="https://blog.sarakvasa.com/blog/0001-post/" />
