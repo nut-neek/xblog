@@ -85,6 +85,13 @@ The DNS records should look the following:&lt;/p&gt;
 &lt;/table&gt;
 &lt;p&gt;First 5 records I already had for the main site. What was confusing to me is that the only thing I had to add on top was the last record.
 No more A records, just one more CNAME record pointing to the &lt;strong&gt;same&lt;/strong&gt; domain as &lt;code&gt;www&lt;/code&gt;. Further routing seems to be done by GitHub itself based on the Pages setup.&lt;/p&gt;
+&lt;h3 id=&quot;github-pages-cname-file&quot;&gt;GitHub Pages CNAME file&lt;/h3&gt;
+&lt;p&gt;Now, the site is successfully setup on the GitHub Pages, and I am able to access it via browser.
+However, I have noticed that after every push to the repository, the GitHub Pages built in action &lt;code&gt;pages build and deployment&lt;/code&gt; is resetting my domain from
+&lt;code&gt;blog.sarakvasa.com&lt;/code&gt; to &lt;code&gt;sarakvasa.com/xblog&lt;/code&gt; which destroys the setup.
+There are two ways to fix it described &lt;a href=&quot;https://github.com/peaceiris/actions-gh-pages?tab=readme-ov-file#%EF%B8%8F-add-cname-file-cname&quot;&gt;here&lt;/a&gt;.
+I decided to go direct and just added &lt;code&gt;CNAME&lt;/code&gt; file to the blog&#39;s &lt;code&gt;public&lt;/code&gt; folder. The &lt;code&gt;CNAME&lt;/code&gt; file should contain the domain name you want to use, in my case just &lt;code&gt;blog.sarakvasa.com&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;That`s how the last quirk was fixed.&lt;/p&gt;
 </content>
   </entry>
   <entry>
