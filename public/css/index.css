@@ -1,7 +1,7 @@
 /* Defaults */
 :root {
 	--font-family: -apple-system, system-ui, sans-serif;
-	--font-family-monospace: Consolas, Menlo, Monaco, Andale Mono WT, Andale Mono, Lucida Console, Lucida Sans Typewriter, DejaVu Sans Mono, Bitstream Vera Sans Mono, Liberation Mono, Nimbus Mono L, Courier New, Courier, monospace;
+	--font-family-monospace: Inconsolata, monospace;
 }
 
 /* Theme colors */
@@ -11,6 +11,7 @@
 	--color-gray-90: #dad8d8;
 
 	--background-color: #1f1f1f;
+	--code-color: #709080;
 
 	--text-color: #dcdccc;
 	--text-color-link: #e3ceab;
@@ -142,6 +143,7 @@ pre:not([class*="language-"]) {
 	overflow-x: auto;
 }
 code {
+	color: var(--code-color);
 	word-break: break-all;
 }
 
