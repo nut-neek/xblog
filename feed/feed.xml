@@ -39,7 +39,7 @@ To fix this, I had to adjust the &lt;code&gt;pathprefix&lt;/code&gt; in the &lt;
 The GitHub part is straightforward, just specify the branch to serve from (&lt;code&gt;gh-pages&lt;/code&gt; if you use bundled workflow)
 and the name of your custom domain (&lt;code&gt;blog.srakvasa.com&lt;/code&gt; in my case).&lt;/p&gt;
 &lt;p&gt;What was not so straightforward is how to set up the DNS records in the domain provider.
-Luckily, GitHub it is pretty easy in fact. So, I have 2 repositories one for main site and one for this blog.
+Luckily, it is pretty easy in fact. So, I have 2 repositories one for main site and one for this blog.
 The main site is called &lt;code&gt;nut-neek.github.io&lt;/code&gt; and the blog is called &lt;code&gt;xblog&lt;/code&gt;.
 The DNS records should look the following:&lt;/p&gt;
 &lt;table&gt;
@@ -84,7 +84,7 @@ The DNS records should look the following:&lt;/p&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;p&gt;First 5 records I already had for the main site. What was confusing to me is that the only thing I had to add on top was the last record.
-No more A records, just one more CNAME record pointing to the &lt;strong&gt;same&lt;/strong&gt; domain as &lt;code&gt;www&lt;/code&gt;. Further routing seems to be done by GitHub itself based on the Pages setup.&lt;/p&gt;
+No more A records, just one more CNAME record pointing to the &lt;strong&gt;SAME&lt;/strong&gt; domain as &lt;code&gt;www&lt;/code&gt;. Further routing seems to be done by GitHub itself based on the Pages setup.&lt;/p&gt;
 &lt;h3 id=&quot;github-pages-cname-file&quot;&gt;GitHub Pages CNAME file&lt;/h3&gt;
 &lt;p&gt;Now, the site is successfully setup on the GitHub Pages, and I am able to access it via browser.
 However, I have noticed that after every push to the repository, the GitHub Pages built-in action &lt;code&gt;pages build and deployment&lt;/code&gt; is resetting my domain from

@@ -489,7 +489,7 @@ To fix this, I had to adjust the <code>pathprefix</code> in the <code>package.js
 The GitHub part is straightforward, just specify the branch to serve from (<code>gh-pages</code> if you use bundled workflow)
 and the name of your custom domain (<code>blog.srakvasa.com</code> in my case).</p>
 <p>What was not so straightforward is how to set up the DNS records in the domain provider.
-Luckily, GitHub it is pretty easy in fact. So, I have 2 repositories one for main site and one for this blog.
+Luckily, it is pretty easy in fact. So, I have 2 repositories one for main site and one for this blog.
 The main site is called <code>nut-neek.github.io</code> and the blog is called <code>xblog</code>.
 The DNS records should look the following:</p>
 <table>
@@ -534,7 +534,7 @@ The DNS records should look the following:</p>
 </tbody>
 </table>
 <p>First 5 records I already had for the main site. What was confusing to me is that the only thing I had to add on top was the last record.
-No more A records, just one more CNAME record pointing to the <strong>same</strong> domain as <code>www</code>. Further routing seems to be done by GitHub itself based on the Pages setup.</p>
+No more A records, just one more CNAME record pointing to the <strong>SAME</strong> domain as <code>www</code>. Further routing seems to be done by GitHub itself based on the Pages setup.</p>
 <h3 id="github-pages-cname-file">GitHub Pages CNAME file</h3>
 <p>Now, the site is successfully setup on the GitHub Pages, and I am able to access it via browser.
 However, I have noticed that after every push to the repository, the GitHub Pages built-in action <code>pages build and deployment</code> is resetting my domain from
@@ -553,7 +553,7 @@ I decided to go direct and just added <code>CNAME</code> file to the blog's <cod
 			<p><em>Built with <a href="https://www.11ty.dev/">Eleventy v3.0.0</a></em></p>
 		</footer>
 
-		<!-- This page `/blog/0002-post/` was built on 2024-10-29T18:27:00.170Z -->
+		<!-- This page `/blog/0002-post/` was built on 2024-10-29T18:33:02.953Z -->
 		<script type="module" src="/dist/rJ3_G-2ArF.js"></script>
 	</body>
 </html>
