@@ -1,6 +1,9 @@
 /*
  * New diff- syntax
  */
+code[class*="language-"], pre[class*="language-"] {
+	font-family: var(--font-family-monospace), monospace;
+}
 
 pre[class*="language-diff-"] {
 	--eleventy-code-padding: 1.25em;

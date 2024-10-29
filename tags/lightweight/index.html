@@ -6,13 +6,14 @@
 		<title>Tagged &#39;lightweight&#39;</title>
 		<meta name="description" content="I am writing here about my tech findings.">
 		<link rel="alternate" href="feed/feed.xml" type="application/atom+xml" title="Roman&#39;s tech blog">
+		<link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
 		
 		<style>.postlist { counter-reset: start-from 2 }
 /* This is an arbitrary CSS string added to the bundle */
 /* Defaults */
 :root {
 	--font-family: -apple-system, system-ui, sans-serif;
-	--font-family-monospace: Consolas, Menlo, Monaco, Andale Mono WT, Andale Mono, Lucida Console, Lucida Sans Typewriter, DejaVu Sans Mono, Bitstream Vera Sans Mono, Liberation Mono, Nimbus Mono L, Courier New, Courier, monospace;
+	--font-family-monospace: Inconsolata, monospace;
 }
 
 /* Theme colors */
@@ -22,6 +23,7 @@
 	--color-gray-90: #dad8d8;
 
 	--background-color: #1f1f1f;
+	--code-color: #709080;
 
 	--text-color: #dcdccc;
 	--text-color-link: #e3ceab;
@@ -153,6 +155,7 @@ pre:not([class*="language-"]) {
 	overflow-x: auto;
 }
 code {
+	color: var(--code-color);
 	word-break: break-all;
 }
 
@@ -300,7 +303,7 @@ header {
 			<p><em>Built with <a href="https://www.11ty.dev/">Eleventy v3.0.0</a></em></p>
 		</footer>
 
-		<!-- This page `/tags/lightweight/` was built on 2024-10-28T19:01:29.705Z -->
+		<!-- This page `/tags/lightweight/` was built on 2024-10-29T18:00:10.061Z -->
 		<script type="module" src="/dist/rJ3_G-2ArF.js"></script>
 	</body>
 </html>

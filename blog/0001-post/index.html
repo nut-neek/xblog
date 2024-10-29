@@ -6,6 +6,7 @@
 		<title>Inception.</title>
 		<meta name="description" content="How did it start.">
 		<link rel="alternate" href="feed/feed.xml" type="application/atom+xml" title="Roman&#39;s tech blog">
+		<link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
 		
 		<style>/**
  * okaidia theme for JavaScript, CSS and HTML
@@ -133,6 +134,9 @@ pre[class*="language-"] {
 /*
  * New diff- syntax
  */
+code[class*="language-"], pre[class*="language-"] {
+	font-family: var(--font-family-monospace), monospace;
+}
 
 pre[class*="language-diff-"] {
 	--eleventy-code-padding: 1.25em;
@@ -179,7 +183,7 @@ pre[class*="language-diff-"] {
 /* Defaults */
 :root {
 	--font-family: -apple-system, system-ui, sans-serif;
-	--font-family-monospace: Consolas, Menlo, Monaco, Andale Mono WT, Andale Mono, Lucida Console, Lucida Sans Typewriter, DejaVu Sans Mono, Bitstream Vera Sans Mono, Liberation Mono, Nimbus Mono L, Courier New, Courier, monospace;
+	--font-family-monospace: Inconsolata, monospace;
 }
 
 /* Theme colors */
@@ -189,6 +193,7 @@ pre[class*="language-diff-"] {
 	--color-gray-90: #dad8d8;
 
 	--background-color: #1f1f1f;
+	--code-color: #709080;
 
 	--text-color: #dcdccc;
 	--text-color-link: #e3ceab;
@@ -320,6 +325,7 @@ pre:not([class*="language-"]) {
 	overflow-x: auto;
 }
 code {
+	color: var(--code-color);
 	word-break: break-all;
 }
 
@@ -468,7 +474,7 @@ Shared memo indeed, so, that other people could find it and spend less time sear
 			<p><em>Built with <a href="https://www.11ty.dev/">Eleventy v3.0.0</a></em></p>
 		</footer>
 
-		<!-- This page `/blog/0001-post/` was built on 2024-10-28T19:01:29.660Z -->
+		<!-- This page `/blog/0001-post/` was built on 2024-10-29T18:00:10.020Z -->
 		<script type="module" src="/dist/rJ3_G-2ArF.js"></script>
 	</body>
 </html>
