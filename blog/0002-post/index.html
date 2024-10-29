@@ -297,11 +297,14 @@ footer {
 }
 
 table {
-	margin: 1em 0;
+	border-collapse: collapse;
 }
-table td,
-table th {
-	padding-right: 1em;
+table :is(td, th) {
+	border:1px dotted var(--color-gray-90);
+	padding: 0.3em 0.5em 0.3em 0.5em;
+	/*padding-right: 0.5em;*/
+	/*padding-left: 0.5em;*/
+	/*padding-right: 1em;*/
 }
 
 pre,
@@ -550,7 +553,7 @@ I decided to go direct and just added <code>CNAME</code> file to the blog's <cod
 			<p><em>Built with <a href="https://www.11ty.dev/">Eleventy v3.0.0</a></em></p>
 		</footer>
 
-		<!-- This page `/blog/0002-post/` was built on 2024-10-29T18:00:10.020Z -->
+		<!-- This page `/blog/0002-post/` was built on 2024-10-29T18:21:39.027Z -->
 		<script type="module" src="/dist/rJ3_G-2ArF.js"></script>
 	</body>
 </html>
