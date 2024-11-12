@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Tech stack for this blog</title>
+		<title>Updating Sonoff Zigbee Coordinator</title>
 		<meta name="description" content="I am writing here about my tech findings.">
 		<link rel="alternate" href="feed/feed.xml" type="application/atom+xml" title="Roman&#39;s tech blog">
 		<link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
@@ -452,98 +452,41 @@ header {
 		<main id="skip">
 			<heading-anchors>
 				
-<h1 id="tech-stack-for-this-blog">Tech stack for this blog</h1>
+<h1 id="updating-sonoff-zigbee-coordinator">Updating Sonoff Zigbee Coordinator</h1>
 
 <ul class="post-metadata">
-	<li><time datetime="2024-10-27">27 October 2024</time></li>
-	<li><a href="/tags/blog/" class="post-tag">blog</a>, </li>
-	<li><a href="/tags/static/" class="post-tag">static</a>, </li>
-	<li><a href="/tags/web/" class="post-tag">web</a>, </li>
-	<li><a href="/tags/markdown/" class="post-tag">markdown</a>, </li>
-	<li><a href="/tags/eleventy/" class="post-tag">eleventy</a>, </li>
-	<li><a href="/tags/lightweight/" class="post-tag">lightweight</a>, </li>
-	<li><a href="/tags/simple/" class="post-tag">simple</a></li>
+	<li><time datetime="2024-11-12">12 November 2024</time></li>
+	<li><a href="/tags/zigbee/" class="post-tag">zigbee</a>, </li>
+	<li><a href="/tags/coordinator/" class="post-tag">coordinator</a>, </li>
+	<li><a href="/tags/sonoff/" class="post-tag">sonoff</a>, </li>
+	<li><a href="/tags/cc2652p/" class="post-tag">CC2652P</a></li>
 </ul>
 
-<p>So, <a href="/blog/001-post.md">the blog</a> is started. To decide on the tech stack, I had the following points to match:</p>
-<ul>
-<li>I am familiar with hosting on GitHub Pages, therefore the site should be static, not using any server-side language nor database.</li>
-<li>For writing text, I'd like something simple and easy to use. Markdown with code snippet highlight should be fine.</li>
-<li>Overall solution should be simple to understand, easy to configure and preferably lightweight.</li>
-</ul>
-<p>After some research, I decided to use <a href="https://www.11ty.dev/">Eleventy</a> as a static site generator. It seems to match all my points.
-One huge pro for the 11ty is that had a <a href="https://github.com/11ty/eleventy-base-blog">base blog repository</a> which I could fork and start using right away.
-It is pretty straightforward to use. <a href="https://en.wikipedia.org/wiki/File_(tool)">Filing</a> here and there, adjusting CSS, removing things I don't need, and voilà, the blog is ready.
-You are reading it right now.</p>
-<h2 id="set-up-quirks">Set-up quirks</h2>
-<p>Base-blog is a great starting point, still there were some quirks setting it up.</p>
-<h3 id="11ty-path-prefix">11ty path prefix</h3>
-<p>First, when GitHub workflow bundled into the base blog builds the site,
-it uses <code>/eleventy-base-blog/</code> directory by default and I wanted to serve it just from the root <code>/</code>.
-To fix this, I had to adjust the <code>pathprefix</code> in the <code>package.json</code>:</p>
-<pre class="language-diff" tabindex="0"><code class="language-diff"><span class="token deleted-sign deleted"><span class="token prefix deleted">-</span><span class="token line">"build-ghpages": "npx @11ty/eleventy --pathprefix=/eleventy-base-blog/",
-</span></span><span class="token inserted-sign inserted"><span class="token prefix inserted">+</span><span class="token line">"build-ghpages": "npx @11ty/eleventy --pathprefix=/",
-</span></span></code></pre>
-<h3 id="custom-domain">Custom domain</h3>
-<p>Second, and it is not 11ty related, is how to set up custom subdomain in GitHub Pages.
-The GitHub part is straightforward, just specify the branch to serve from (<code>gh-pages</code> if you use bundled workflow)
-and the name of your custom domain (<code>blog.srakvasa.com</code> in my case).</p>
-<p>What was not so straightforward is how to set up the DNS records in the domain provider.
-Luckily, it is pretty easy in fact. So, I have 2 repositories one for main site and one for this blog.
-The main site is called <code>nut-neek.github.io</code> and the blog is called <code>xblog</code>.
-The DNS records should look the following:</p>
-<table>
-<thead>
-<tr>
-<th>Type</th>
-<th>Host</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>A Record</td>
-<td>@</td>
-<td>185.199.108.153</td>
-</tr>
-<tr>
-<td>A Record</td>
-<td>@</td>
-<td>185.199.109.153</td>
-</tr>
-<tr>
-<td>A Record</td>
-<td>@</td>
-<td>185.199.110.153</td>
-</tr>
-<tr>
-<td>A Record</td>
-<td>@</td>
-<td>185.199.111.153</td>
-</tr>
-<tr>
-<td>CNAME</td>
-<td>www</td>
-<td>nut-neek.github.io.</td>
-</tr>
-<tr>
-<td>CNAME</td>
-<td>blog</td>
-<td>nut-neek.github.io.</td>
-</tr>
-</tbody>
-</table>
-<p>First 5 records I already had for the main site. What was confusing to me is that the only thing I had to add on top was the last record.
-No more A records, just one more CNAME record pointing to the <strong>SAME</strong> domain as <code>www</code>. Further routing seems to be done by GitHub itself based on the Pages setup.</p>
-<h3 id="github-pages-cname-file">GitHub Pages CNAME file</h3>
-<p>Now, the site is successfully setup on the GitHub Pages, and I am able to access it via browser.
-However, I have noticed that after every push to the repository, the GitHub Pages built-in action <code>pages build and deployment</code> is resetting my domain from
-<code>blog.sarakvasa.com</code> to <code>sarakvasa.com/xblog</code> which destroys the setup.
-There are two ways to fix it described <a href="https://github.com/peaceiris/actions-gh-pages?tab=readme-ov-file#%EF%B8%8F-add-cname-file-cname">here</a>.
-I decided to go direct and just added <code>CNAME</code> file to the blog's <code>public</code> folder. The <code>CNAME</code> file should contain the domain name you want to use, in my case just <code>blog.sarakvasa.com</code>.</p>
-<p>That`s how the last quirk was fixed.</p>
+<p>Coming back to what has triggered this blog to an existence: <a href="/blog/0001-post/">trying</a> to flash Zigbee coordinator firmware.</p>
+<p>I am a happy owner of one of those guys:</p>
+<picture><source type="image/avif" srcset="/blog/0003-post/xiHnOf5gsA-300.avif 300w"><source type="image/webp" srcset="/blog/0003-post/xiHnOf5gsA-300.webp 300w"><img loading="lazy" decoding="async" src="/blog/0003-post/xiHnOf5gsA-300.jpeg" alt="Picture of coordinator" width="300" height="300"></picture>
+<p>It is a Sonoff Zigbee 3.0 USB dongle, which is based on Texas Instruments CC2652P chip.</p>
+<p>At one point I decided to update its firmware, because the version I was running has been reported unstable and
+I had some devices falling off the network from time to time. After some research, I found <a href="https://www.zigbee2mqtt.io/guide/adapters/flashing/flashing_via_cc2538-bsl.html">this</a>.
+If you are lazy to read it, here is how I did it:</p>
+<ol>
+<li>Create the following docker compose file:<pre class="language-yaml" tabindex="0"><code class="language-yaml"><span class="token key atrule">services</span><span class="token punctuation">:</span>
+  <span class="token key atrule">ti-cc-tool</span><span class="token punctuation">:</span>
+    <span class="token key atrule">image</span><span class="token punctuation">:</span> <span class="token string">"ckware/ti-cc-tool"</span>
+    <span class="token key atrule">environment</span><span class="token punctuation">:</span>
+      <span class="token key atrule">FIRMWARE_URL</span><span class="token punctuation">:</span> <span class="token string">"https://github.com/Koenkk/Z-Stack-firmware/releases/download/Z-Stack_3.x.0_coordinator_20240710/CC1352P2_CC2652P_launchpad_coordinator_20240710.zip"</span>
+    <span class="token key atrule">devices</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> <span class="token string">"/dev/ttyUSB0:/dev/ttyUSB0"</span>
+    <span class="token key atrule">command</span><span class="token punctuation">:</span> <span class="token punctuation">[</span> <span class="token string">"-ewv"</span><span class="token punctuation">,</span> <span class="token string">"-p"</span><span class="token punctuation">,</span> <span class="token string">"/dev/ttyUSB0"</span><span class="token punctuation">,</span> <span class="token string">"--bootloader-sonoff-usb"</span> <span class="token punctuation">]</span></code></pre>
+</li>
+<li>Run: <code>docker-compose up</code></li>
+<li>Wait ...</li>
+<li>Done 🙂</li>
+</ol>
+<h3 id="ps">PS</h3>
+<p>According to the documentation docker approach is only working on Linux (why would you use anything else anyways?).</p>
 
-<ul class="links-nextprev"><li class="links-nextprev-prev"><a href="/blog/0001-post/">← Inception.</a></li><li class="links-nextprev-next"><a href="/blog/0003-post/">Updating Sonoff Zigbee Coordinator →</a></li>
+<ul class="links-nextprev"><li class="links-nextprev-prev"><a href="/blog/0002-post/">← Tech stack for this blog</a></li>
 </ul>
 
 			</heading-anchors>
@@ -553,7 +496,7 @@ I decided to go direct and just added <code>CNAME</code> file to the blog's <cod
 			<p><em>Built with <a href="https://www.11ty.dev/">Eleventy v3.0.0</a></em></p>
 		</footer>
 
-		<!-- This page `/blog/0002-post/` was built on 2024-11-12T18:33:04.365Z -->
+		<!-- This page `/blog/0003-post/` was built on 2024-11-12T18:33:04.365Z -->
 		<script type="module" src="/dist/rJ3_G-2ArF.js"></script>
 	</body>
 </html>

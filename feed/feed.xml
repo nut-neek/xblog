@@ -5,11 +5,41 @@
   <subtitle>I am writing here about my tech findings.</subtitle>
   <link href="https://blog.sarakvasa.com/feed/feed.xml" rel="self" />
   <link href="https://blog.sarakvasa.com/" />
-  <updated>2024-10-27T00:00:00Z</updated>
+  <updated>2024-11-12T00:00:00Z</updated>
   <id>https://blog.sarakvasa.com/</id>
   <author>
     <name>Roman Sarakvasa</name>
   </author>
+  <entry>
+    <title>Updating Sonoff Zigbee Coordinator</title>
+    <link href="https://blog.sarakvasa.com/blog/0003-post/" />
+    <updated>2024-11-12T00:00:00Z</updated>
+    <id>https://blog.sarakvasa.com/blog/0003-post/</id>
+    <content type="html">&lt;p&gt;Coming back to what has triggered this blog to an existence: &lt;a href=&quot;https://blog.sarakvasa.com/blog/0001-post/&quot;&gt;trying&lt;/a&gt; to flash Zigbee coordinator firmware.&lt;/p&gt;
+&lt;p&gt;I am a happy owner of one of those guys:&lt;/p&gt;
+&lt;picture&gt;&lt;source type=&quot;image/avif&quot; srcset=&quot;https://blog.sarakvasa.com/blog/0003-post/xiHnOf5gsA-300.avif 300w&quot;&gt;&lt;source type=&quot;image/webp&quot; srcset=&quot;https://blog.sarakvasa.com/blog/0003-post/xiHnOf5gsA-300.webp 300w&quot;&gt;&lt;img loading=&quot;lazy&quot; decoding=&quot;async&quot; src=&quot;https://blog.sarakvasa.com/blog/0003-post/xiHnOf5gsA-300.jpeg&quot; alt=&quot;Picture of coordinator&quot; width=&quot;300&quot; height=&quot;300&quot;&gt;&lt;/picture&gt;
+&lt;p&gt;It is a Sonoff Zigbee 3.0 USB dongle, which is based on Texas Instruments CC2652P chip.&lt;/p&gt;
+&lt;p&gt;At one point I decided to update its firmware, because the version I was running has been reported unstable and
+I had some devices falling off the network from time to time. After some research, I found &lt;a href=&quot;https://www.zigbee2mqtt.io/guide/adapters/flashing/flashing_via_cc2538-bsl.html&quot;&gt;this&lt;/a&gt;.
+If you are lazy to read it, here is how I did it:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Create the following docker compose file:&lt;pre class=&quot;language-yaml&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token key atrule&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;ti-cc-tool&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;image&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;ckware/ti-cc-tool&quot;&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;environment&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;FIRMWARE_URL&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;https://github.com/Koenkk/Z-Stack-firmware/releases/download/Z-Stack_3.x.0_coordinator_20240710/CC1352P2_CC2652P_launchpad_coordinator_20240710.zip&quot;&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;devices&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/dev/ttyUSB0:/dev/ttyUSB0&quot;&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;-ewv&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;-p&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/dev/ttyUSB0&quot;&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;--bootloader-sonoff-usb&quot;&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;]&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;/li&gt;
+&lt;li&gt;Run: &lt;code&gt;docker-compose up&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Wait ...&lt;/li&gt;
+&lt;li&gt;Done 🙂&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&quot;ps&quot;&gt;PS&lt;/h3&gt;
+&lt;p&gt;According to the documentation docker approach is only working on Linux (why would you use anything else anyways?).&lt;/p&gt;
+</content>
+  </entry>
   <entry>
     <title>Tech stack for this blog</title>
     <link href="https://blog.sarakvasa.com/blog/0002-post/" />
@@ -99,7 +129,7 @@ I decided to go direct and just added &lt;code&gt;CNAME&lt;/code&gt; file to the
     <link href="https://blog.sarakvasa.com/blog/0001-post/" />
     <updated>2024-10-26T00:00:00Z</updated>
     <id>https://blog.sarakvasa.com/blog/0001-post/</id>
-    <content type="html">&lt;p&gt;One day, after spending some hour(s) investigating how to flash my Zigbee coordinator, I thought
+    <content type="html">&lt;p&gt;One day, after spending some hour(s) investigating how to flash my &lt;a href=&quot;https://blog.sarakvasa.com/blog/0003-post/&quot;&gt;Zigbee coordinator&lt;/a&gt;, I thought
 it might be a good idea to have a memo somewhere to keep track of the things I learned.
 Shared memo indeed, so, that other people could find it and spend less time searching for the same.&lt;/p&gt;
 &lt;p&gt;In short, the idea is to create an archive which will be just a log of my findings, thoughts, and ideas.&lt;/p&gt;
