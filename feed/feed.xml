@@ -5,11 +5,93 @@
   <subtitle>I am writing here about my tech findings.</subtitle>
   <link href="https://blog.sarakvasa.com/feed/feed.xml" rel="self" />
   <link href="https://blog.sarakvasa.com/" />
-  <updated>2024-11-12T00:00:00Z</updated>
+  <updated>2025-02-22T00:00:00Z</updated>
   <id>https://blog.sarakvasa.com/</id>
   <author>
     <name>Roman Sarakvasa</name>
   </author>
+  <entry>
+    <title>Hybrid Traefik setup</title>
+    <link href="https://blog.sarakvasa.com/blog/0004-post/" />
+    <updated>2025-02-22T00:00:00Z</updated>
+    <id>https://blog.sarakvasa.com/blog/0004-post/</id>
+    <content type="html">&lt;p&gt;I am not sure if it is because of Traefik is pretty new for me or because its documentation is not perfect, but it was a pain in the ass
+to configure it so that it would proxy my external service as well as docker services. One extra complexity was that the service external in relation
+to the docker was https GUI with self-signed certificates.&lt;/p&gt;
+&lt;p&gt;I must admit that dynamic docker part of Traefik was pretty straightforward and worked out-of-the-box-ish.&lt;/p&gt;
+&lt;p&gt;Long story short here are working configurations I ended up having:&lt;/p&gt;
+&lt;h3 id=&quot;docker-compose-for-traefik&quot;&gt;Docker compose for Traefik&lt;/h3&gt;
+&lt;pre class=&quot;language-yaml&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;  &lt;span class=&quot;token key atrule&quot;&gt;traefik&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;image&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; traefik&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;v3.3
+    &lt;span class=&quot;token key atrule&quot;&gt;restart&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; unless&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;stopped
+    &lt;span class=&quot;token key atrule&quot;&gt;container_name&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; traefik
+    &lt;span class=&quot;token key atrule&quot;&gt;ports&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;443:443&quot;&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;read_only&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean important&quot;&gt;true&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;security_opt&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; no&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;new&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;privileges=true
+    &lt;span class=&quot;token key atrule&quot;&gt;volumes&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; /host/path/traefik/traefik.yml&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/etc/traefik/traefik.yaml&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;ro
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; /host/path/traefik/configs&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/configs&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;ro
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; /var/run/docker.sock&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/var/run/docker.sock&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;ro&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;static-config-trafik-yaml&quot;&gt;Static config: trafik.yaml&lt;/h3&gt;
+&lt;pre class=&quot;language-yaml&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token punctuation&quot;&gt;---&lt;/span&gt;
+&lt;span class=&quot;token comment&quot;&gt;# accessLog: {}  # uncomment this line to enable access log&lt;/span&gt;
+&lt;span class=&quot;token key atrule&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;level&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; WARN  &lt;span class=&quot;token comment&quot;&gt;# ERROR, DEBUG, PANIC, FATAL, ERROR, WARN, INFO&lt;/span&gt;
+&lt;span class=&quot;token key atrule&quot;&gt;providers&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;docker&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;exposedByDefault&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean important&quot;&gt;false&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;endpoint&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;unix:///var/run/docker.sock&#39;&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;file&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;directory&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/configs&quot;&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;watch&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean important&quot;&gt;true&lt;/span&gt;
+&lt;span class=&quot;token key atrule&quot;&gt;api&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;insecure&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean important&quot;&gt;false&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;dashboard&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean important&quot;&gt;false&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;# if you don&#39;t need the dashboard disable it&lt;/span&gt;
+&lt;span class=&quot;token key atrule&quot;&gt;entryPoints&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;https&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&#39;:443&#39;&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;# https&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;tls&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;token key atrule&quot;&gt;global&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;checkNewVersion&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean important&quot;&gt;false&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;sendAnonymousUsage&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean important&quot;&gt;false&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;# disable this if you don&#39;t want to send anonymous usage data to traefik&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;h3 id=&quot;dynamic-config-any-name-yaml&quot;&gt;Dynamic config: any-name.yaml&lt;/h3&gt;
+&lt;pre class=&quot;language-yaml&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token key atrule&quot;&gt;tls&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;certificates&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;certFile&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; /configs/lets&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;encrypt/fullchain.pem
+      &lt;span class=&quot;token key atrule&quot;&gt;keyFile&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; /configs/lets&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;encrypt/key.pem
+  &lt;span class=&quot;token key atrule&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;minVersion&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; VersionTLS13
+      &lt;span class=&quot;token key atrule&quot;&gt;clientAuth&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;# this sets up mTLS&lt;/span&gt;
+        &lt;span class=&quot;token key atrule&quot;&gt;caFiles&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+          &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; /configs/your&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;mtls/ca.crt
+        &lt;span class=&quot;token key atrule&quot;&gt;clientAuthType&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; RequireAndVerifyClientCert
+    &lt;span class=&quot;token key atrule&quot;&gt;disableClientAuth&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;# this can be referenced from docker labels for those services that cannot work with mTLS&lt;/span&gt;
+        &lt;span class=&quot;token key atrule&quot;&gt;clientAuth&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;token key atrule&quot;&gt;clientAuthType&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; NoClientCert
+
+&lt;span class=&quot;token key atrule&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;routers&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;nonDockerHttpsBackend&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;# setup service external to the docker&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;rule&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;Host (`nonDockerService.example.com`)&quot;&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;service&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; nonDockerHttpsBackend
+
+  &lt;span class=&quot;token key atrule&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;nonDockerHttpsBackend&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;loadBalancer&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+        &lt;span class=&quot;token key atrule&quot;&gt;serversTransport&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; nonDockerHttpsBackend
+        &lt;span class=&quot;token key atrule&quot;&gt;servers&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+          &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;token key atrule&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;https://192.168.11.32:4567&quot;&lt;/span&gt;
+        &lt;span class=&quot;token key atrule&quot;&gt;passHostHeader&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean important&quot;&gt;true&lt;/span&gt;
+
+  &lt;span class=&quot;token key atrule&quot;&gt;serversTransports&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token comment&quot;&gt;# it was hard to figure out how to setup this. It is needed if your proxied backend is using self-signed certificate.&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;nonDockerHttpsBackend&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;insecureSkipVerify&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean important&quot;&gt;true&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+</content>
+  </entry>
   <entry>
     <title>Updating Sonoff Zigbee Coordinator</title>
     <link href="https://blog.sarakvasa.com/blog/0003-post/" />
