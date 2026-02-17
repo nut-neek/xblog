@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Updating Sonoff Zigbee Coordinator</title>
+		<title>Cron-like scheduler for docker</title>
 		<meta name="description" content="I am writing here about my tech findings.">
 		<link rel="alternate" href="feed/feed.xml" type="application/atom+xml" title="Roman&#39;s tech blog">
 		<link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
@@ -452,41 +452,69 @@ header {
 		<main id="skip">
 			<heading-anchors>
 				
-<h1 id="updating-sonoff-zigbee-coordinator">Updating Sonoff Zigbee Coordinator</h1>
+<h1 id="cron-like-scheduler-for-docker">Cron-like scheduler for docker</h1>
 
 <ul class="post-metadata">
-	<li><time datetime="2024-11-12">12 November 2024</time></li>
-	<li><a href="/tags/zigbee/" class="post-tag">zigbee</a>, </li>
-	<li><a href="/tags/coordinator/" class="post-tag">coordinator</a>, </li>
-	<li><a href="/tags/sonoff/" class="post-tag">sonoff</a>, </li>
-	<li><a href="/tags/cc2652p/" class="post-tag">CC2652P</a></li>
+	<li><time datetime="2026-02-17">17 February 2026</time></li>
+	<li><a href="/tags/docker/" class="post-tag">docker</a>, </li>
+	<li><a href="/tags/cron/" class="post-tag">cron</a>, </li>
+	<li><a href="/tags/scheduler/" class="post-tag">scheduler</a></li>
 </ul>
 
-<p>Coming back to what has triggered this blog to an existence: <a href="/blog/0001-post/">trying</a> to flash Zigbee coordinator firmware.</p>
-<p>I am a happy owner of one of those guys:</p>
-<picture><source type="image/avif" srcset="/blog/0003-post/xiHnOf5gsA-300.avif 300w"><source type="image/webp" srcset="/blog/0003-post/xiHnOf5gsA-300.webp 300w"><img loading="lazy" decoding="async" src="/blog/0003-post/xiHnOf5gsA-300.jpeg" alt="Picture of coordinator" width="300" height="300"></picture>
-<p>It is a Sonoff Zigbee 3.0 USB dongle, which is based on Texas Instruments CC2652P chip.</p>
-<p>At one point I decided to update its firmware, because the version I was running has been reported unstable and
-I had some devices falling off the network from time to time. After some research, I found <a href="https://www.zigbee2mqtt.io/guide/adapters/flashing/flashing_via_cc2538-bsl.html">this</a>.
-If you are lazy to read it, here is how I did it:</p>
-<ol>
-<li>Create the following docker compose file:<pre class="language-yaml" tabindex="0"><code class="language-yaml"><span class="token key atrule">services</span><span class="token punctuation">:</span>
-  <span class="token key atrule">ti-cc-tool</span><span class="token punctuation">:</span>
-    <span class="token key atrule">image</span><span class="token punctuation">:</span> <span class="token string">"ckware/ti-cc-tool"</span>
+<p>I have a Telegram bot and some other scripts that need to run on a schedule.</p>
+<p>Over the years, I’ve used various solutions for this. First, plain cron on a bare-metal server;
+then cron running in the foreground inside a Docker container.
+Finally, I used a container running <a href="https://supervisord.org/"><code>supervisord</code></a>, which in turn ran cron in the foreground
+along with several other daemons that needed to run continuously rather than on a schedule.</p>
+<p>However, I was never completely satisfied with the classic cron approach:</p>
+<ul>
+<li>First, it is very sensitive to configuration syntax and file permissions. Even a small mistake can cause it to fail silently,
+without giving much feedback about what went wrong.</li>
+<li>Second, it is not very Docker-friendly. I had to deal with passing environment variables and capturing job output logs
+using bash helper scripts. It worked, but it wasn’t elegant.</li>
+</ul>
+<p>I was about to write my own cron-like scheduler/daemon manager for Docker when I discovered <a href="https://github.com/mcuadros/ofelia">Ofelia</a>
+— a tiny scheduler built specifically for Docker.</p>
+<p>Here is how I use it; it’s fairly straightforward:</p>
+<pre class="language-yaml" tabindex="0"><code class="language-yaml"><span class="token key atrule">services</span><span class="token punctuation">:</span>
+  <span class="token key atrule">ofelia</span><span class="token punctuation">:</span>
+    <span class="token key atrule">depends_on</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> jobs
+    <span class="token key atrule">image</span><span class="token punctuation">:</span> mcuadros/ofelia<span class="token punctuation">:</span>latest
+    <span class="token key atrule">restart</span><span class="token punctuation">:</span> unless<span class="token punctuation">-</span>stopped
     <span class="token key atrule">environment</span><span class="token punctuation">:</span>
-      <span class="token key atrule">FIRMWARE_URL</span><span class="token punctuation">:</span> <span class="token string">"https://github.com/Koenkk/Z-Stack-firmware/releases/download/Z-Stack_3.x.0_coordinator_20240710/CC1352P2_CC2652P_launchpad_coordinator_20240710.zip"</span>
-    <span class="token key atrule">devices</span><span class="token punctuation">:</span>
-      <span class="token punctuation">-</span> <span class="token string">"/dev/ttyUSB0:/dev/ttyUSB0"</span>
-    <span class="token key atrule">command</span><span class="token punctuation">:</span> <span class="token punctuation">[</span> <span class="token string">"-ewv"</span><span class="token punctuation">,</span> <span class="token string">"-p"</span><span class="token punctuation">,</span> <span class="token string">"/dev/ttyUSB0"</span><span class="token punctuation">,</span> <span class="token string">"--bootloader-sonoff-usb"</span> <span class="token punctuation">]</span></code></pre>
-</li>
-<li>Run: <code>docker-compose up</code></li>
-<li>Wait ...</li>
-<li>Done 🙂</li>
-</ol>
-<h3 id="ps">PS</h3>
-<p>According to the documentation docker approach is only working on Linux (why would you use anything else anyways?).</p>
+      <span class="token punctuation">-</span> TZ=Europe/Helsinki
+    <span class="token key atrule">command</span><span class="token punctuation">:</span> daemon <span class="token punctuation">-</span><span class="token punctuation">-</span>docker <span class="token punctuation">-</span>f "name=jobs"
+    <span class="token key atrule">volumes</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> /var/run/docker.sock<span class="token punctuation">:</span>/var/run/docker.sock<span class="token punctuation">:</span>ro
+  <span class="token key atrule">jobs</span><span class="token punctuation">:</span>
+    <span class="token key atrule">container_name</span><span class="token punctuation">:</span> jobs
+    <span class="token key atrule">build</span><span class="token punctuation">:</span>
+      <span class="token key atrule">context</span><span class="token punctuation">:</span> /cron/docker
+    <span class="token key atrule">init</span><span class="token punctuation">:</span> <span class="token boolean important">true</span>
+    <span class="token key atrule">restart</span><span class="token punctuation">:</span> unless<span class="token punctuation">-</span>stopped
+    <span class="token key atrule">environment</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> SECRET=$<span class="token punctuation">{</span>SECRET<span class="token punctuation">}</span>
+    <span class="token key atrule">volumes</span><span class="token punctuation">:</span>
+      <span class="token punctuation">-</span> /cron/etc/supervisord.conf<span class="token punctuation">:</span>/etc/supervisor/conf.d/supervisord.conf<span class="token punctuation">:</span>ro
+      <span class="token punctuation">-</span> /cron/jobs<span class="token punctuation">:</span>/jobs
+    <span class="token key atrule">labels</span><span class="token punctuation">:</span>
+      <span class="token key atrule">ofelia.enabled</span><span class="token punctuation">:</span> <span class="token string">"true"</span>
+      <span class="token key atrule">ofelia.job-exec.my-first-script.schedule</span><span class="token punctuation">:</span> <span class="token string">"0 55 22 * * *"</span>
+      <span class="token key atrule">ofelia.job-exec.my-first-script.command</span><span class="token punctuation">:</span> <span class="token string">"/jobs/my-first-script.py"</span>
+      <span class="token key atrule">ofelia.job-exec.my-second-script.schedule</span><span class="token punctuation">:</span> <span class="token string">"@every 1h"</span>
+      <span class="token key atrule">ofelia.job-exec.my-second-script.command</span><span class="token punctuation">:</span> <span class="token string">"/jobs/my-other-script.py"</span></code></pre>
+<p>Quirks:</p>
+<ul>
+<li>Cron expressions are not classic — they include seconds (an extra field at the beginning).</li>
+<li>You need to set the <code>TZ</code> environment variable on the Ofelia container for it to use the correct timezone in your cron expressions.</li>
+<li>Expressions in the <code>@every</code> format are also supported, which is quite handy. However, the first run happens only after the specified interval.
+If you want the job to run immediately on startup, you need to work around this.</li>
+<li>Ofelia can run jobs in any running container or start a fresh container for each execution. I prefer the former, since I mix scheduled jobs and mail filtering daemons in the same container.</li>
+<li>Security note: Ofelia requires access to the Docker socket. Make sure you understand the security implications.</li>
+</ul>
 
-<ul class="links-nextprev"><li class="links-nextprev-prev"><a href="/blog/0002-post/">← Tech stack for this blog</a></li><li class="links-nextprev-next"><a href="/blog/0004-post/">Hybrid Traefik setup →</a></li>
+<ul class="links-nextprev"><li class="links-nextprev-prev"><a href="/blog/0004-post/">← Hybrid Traefik setup</a></li>
 </ul>
 
 			</heading-anchors>
@@ -496,7 +524,7 @@ If you are lazy to read it, here is how I did it:</p>
 			<p><em>Built with <a href="https://www.11ty.dev/">Eleventy v3.1.2</a></em></p>
 		</footer>
 
-		<!-- This page `/blog/0003-post/` was built on 2026-02-17T18:38:32.897Z -->
+		<!-- This page `/blog/0005-post/` was built on 2026-02-17T18:38:32.897Z -->
 		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
 	</body>
 </html>

@@ -5,17 +5,76 @@
   <subtitle>I am writing here about my tech findings.</subtitle>
   <link href="https://blog.sarakvasa.com/feed/feed.xml" rel="self" />
   <link href="https://blog.sarakvasa.com/" />
-  <updated>2025-02-22T00:00:00Z</updated>
+  <updated>2026-02-17T00:00:00Z</updated>
   <id>https://blog.sarakvasa.com/</id>
   <author>
     <name>Roman Sarakvasa</name>
   </author>
   <entry>
+    <title>Cron-like scheduler for docker</title>
+    <link href="https://blog.sarakvasa.com/blog/0005-post/" />
+    <updated>2026-02-17T00:00:00Z</updated>
+    <id>https://blog.sarakvasa.com/blog/0005-post/</id>
+    <content type="html">&lt;p&gt;I have a Telegram bot and some other scripts that need to run on a schedule.&lt;/p&gt;
+&lt;p&gt;Over the years, I’ve used various solutions for this. First, plain cron on a bare-metal server;
+then cron running in the foreground inside a Docker container.
+Finally, I used a container running &lt;a href=&quot;https://supervisord.org/&quot;&gt;&lt;code&gt;supervisord&lt;/code&gt;&lt;/a&gt;, which in turn ran cron in the foreground
+along with several other daemons that needed to run continuously rather than on a schedule.&lt;/p&gt;
+&lt;p&gt;However, I was never completely satisfied with the classic cron approach:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;First, it is very sensitive to configuration syntax and file permissions. Even a small mistake can cause it to fail silently,
+without giving much feedback about what went wrong.&lt;/li&gt;
+&lt;li&gt;Second, it is not very Docker-friendly. I had to deal with passing environment variables and capturing job output logs
+using bash helper scripts. It worked, but it wasn’t elegant.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I was about to write my own cron-like scheduler/daemon manager for Docker when I discovered &lt;a href=&quot;https://github.com/mcuadros/ofelia&quot;&gt;Ofelia&lt;/a&gt;
+— a tiny scheduler built specifically for Docker.&lt;/p&gt;
+&lt;p&gt;Here is how I use it; it’s fairly straightforward:&lt;/p&gt;
+&lt;pre class=&quot;language-yaml&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-yaml&quot;&gt;&lt;span class=&quot;token key atrule&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;token key atrule&quot;&gt;ofelia&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;depends_on&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; jobs
+    &lt;span class=&quot;token key atrule&quot;&gt;image&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; mcuadros/ofelia&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;latest
+    &lt;span class=&quot;token key atrule&quot;&gt;restart&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; unless&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;stopped
+    &lt;span class=&quot;token key atrule&quot;&gt;environment&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; TZ=Europe/Helsinki
+    &lt;span class=&quot;token key atrule&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; daemon &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;docker &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;f &quot;name=jobs&quot;
+    &lt;span class=&quot;token key atrule&quot;&gt;volumes&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; /var/run/docker.sock&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/var/run/docker.sock&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;ro
+  &lt;span class=&quot;token key atrule&quot;&gt;jobs&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;container_name&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; jobs
+    &lt;span class=&quot;token key atrule&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; /cron/docker
+    &lt;span class=&quot;token key atrule&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token boolean important&quot;&gt;true&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;restart&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; unless&lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt;stopped
+    &lt;span class=&quot;token key atrule&quot;&gt;environment&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; SECRET=$&lt;span class=&quot;token punctuation&quot;&gt;{&lt;/span&gt;SECRET&lt;span class=&quot;token punctuation&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;token key atrule&quot;&gt;volumes&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; /cron/etc/supervisord.conf&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/etc/supervisor/conf.d/supervisord.conf&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;ro
+      &lt;span class=&quot;token punctuation&quot;&gt;-&lt;/span&gt; /cron/jobs&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;/jobs
+    &lt;span class=&quot;token key atrule&quot;&gt;labels&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;ofelia.enabled&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;true&quot;&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;ofelia.job-exec.my-first-script.schedule&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;0 55 22 * * *&quot;&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;ofelia.job-exec.my-first-script.command&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/jobs/my-first-script.py&quot;&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;ofelia.job-exec.my-second-script.schedule&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;@every 1h&quot;&lt;/span&gt;
+      &lt;span class=&quot;token key atrule&quot;&gt;ofelia.job-exec.my-second-script.command&lt;/span&gt;&lt;span class=&quot;token punctuation&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;token string&quot;&gt;&quot;/jobs/my-other-script.py&quot;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Quirks:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Cron expressions are not classic — they include seconds (an extra field at the beginning).&lt;/li&gt;
+&lt;li&gt;You need to set the &lt;code&gt;TZ&lt;/code&gt; environment variable on the Ofelia container for it to use the correct timezone in your cron expressions.&lt;/li&gt;
+&lt;li&gt;Expressions in the &lt;code&gt;@every&lt;/code&gt; format are also supported, which is quite handy. However, the first run happens only after the specified interval.
+If you want the job to run immediately on startup, you need to work around this.&lt;/li&gt;
+&lt;li&gt;Ofelia can run jobs in any running container or start a fresh container for each execution. I prefer the former, since I mix scheduled jobs and mail filtering daemons in the same container.&lt;/li&gt;
+&lt;li&gt;Security note: Ofelia requires access to the Docker socket. Make sure you understand the security implications.&lt;/li&gt;
+&lt;/ul&gt;
+</content>
+  </entry>
+  <entry>
     <title>Hybrid Traefik setup</title>
     <link href="https://blog.sarakvasa.com/blog/0004-post/" />
     <updated>2025-02-22T00:00:00Z</updated>
     <id>https://blog.sarakvasa.com/blog/0004-post/</id>
-    <content type="html">&lt;p&gt;I am not sure if it is because of Traefik is pretty new for me or because its documentation is not perfect, but it was a pain in the ass
+    <content type="html">&lt;p&gt;I am not sure if it is because of Traefik is pretty new for me or because its documentation is not perfect. Nevertheless, it was a pain in the ass
 to configure it so that it would proxy my external service as well as docker services. One extra complexity was that the service external in relation
 to the docker was https GUI with self-signed certificates.&lt;/p&gt;
 &lt;p&gt;I must admit that dynamic docker part of Traefik was pretty straightforward and worked out-of-the-box-ish.&lt;/p&gt;
@@ -143,9 +202,9 @@ You are reading it right now.&lt;/p&gt;
 &lt;p&gt;First, when GitHub workflow bundled into the base blog builds the site,
 it uses &lt;code&gt;/eleventy-base-blog/&lt;/code&gt; directory by default and I wanted to serve it just from the root &lt;code&gt;/&lt;/code&gt;.
 To fix this, I had to adjust the &lt;code&gt;pathprefix&lt;/code&gt; in the &lt;code&gt;package.json&lt;/code&gt;:&lt;/p&gt;
-&lt;pre class=&quot;language-diff&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-diff&quot;&gt;&lt;span class=&quot;token deleted-sign deleted&quot;&gt;&lt;span class=&quot;token prefix deleted&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;token line&quot;&gt;&quot;build-ghpages&quot;: &quot;npx @11ty/eleventy --pathprefix=/eleventy-base-blog/&quot;,
-&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;token inserted-sign inserted&quot;&gt;&lt;span class=&quot;token prefix inserted&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;token line&quot;&gt;&quot;build-ghpages&quot;: &quot;npx @11ty/eleventy --pathprefix=/&quot;,
-&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
+&lt;pre class=&quot;language-diff&quot; tabindex=&quot;0&quot;&gt;&lt;code class=&quot;language-diff&quot;&gt;&lt;span class=&quot;token deleted-sign deleted&quot;&gt;&lt;span class=&quot;token prefix deleted&quot;&gt;-&lt;/span&gt;&quot;build-ghpages&quot;: &quot;npx @11ty/eleventy --pathprefix=/eleventy-base-blog/&quot;,
+&lt;/span&gt;&lt;span class=&quot;token inserted-sign inserted&quot;&gt;&lt;span class=&quot;token prefix inserted&quot;&gt;+&lt;/span&gt;&quot;build-ghpages&quot;: &quot;npx @11ty/eleventy --pathprefix=/&quot;,
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;
 &lt;h3 id=&quot;custom-domain&quot;&gt;Custom domain&lt;/h3&gt;
 &lt;p&gt;Second, and it is not 11ty related, is how to set up custom subdomain in GitHub Pages.
 The GitHub part is straightforward, just specify the branch to serve from (&lt;code&gt;gh-pages&lt;/code&gt; if you use bundled workflow)
