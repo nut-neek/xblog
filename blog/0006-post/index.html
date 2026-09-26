@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Lightweight docker process supervisor</title>
+		<meta name="description" content="I am writing here about my tech findings.">
+		<link rel="alternate" href="feed/feed.xml" type="application/atom+xml" title="Roman&#39;s tech blog">
+		<link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
+		
+		<style>/**
+ * okaidia theme for JavaScript, CSS and HTML
+ * Loosely based on Monokai textmate theme by http://www.monokai.nl/
+ * @author ocodia
+ */
+
+code[class*="language-"],
+pre[class*="language-"] {
+	color: #f8f8f2;
+	background: none;
+	text-shadow: 0 1px rgba(0, 0, 0, 0.3);
+	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+	font-size: 1em;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+}
+
+/* Code blocks */
+pre[class*="language-"] {
+	padding: 1em;
+	margin: .5em 0;
+	overflow: auto;
+	border-radius: 0.3em;
+}
+
+:not(pre) > code[class*="language-"],
+pre[class*="language-"] {
+	background: #272822;
+}
+
+/* Inline code */
+:not(pre) > code[class*="language-"] {
+	padding: .1em;
+	border-radius: .3em;
+	white-space: normal;
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+	color: #8292a2;
+}
+
+.token.punctuation {
+	color: #f8f8f2;
+}
+
+.token.namespace {
+	opacity: .7;
+}
+
+.token.property,
+.token.tag,
+.token.constant,
+.token.symbol,
+.token.deleted {
+	color: #f92672;
+}
+
+.token.boolean,
+.token.number {
+	color: #ae81ff;
+}
+
+.token.selector,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin,
+.token.inserted {
+	color: #a6e22e;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string,
+.token.variable {
+	color: #f8f8f2;
+}
+
+.token.atrule,
+.token.attr-value,
+.token.function,
+.token.class-name {
+	color: #e6db74;
+}
+
+.token.keyword {
+	color: #66d9ef;
+}
+
+.token.regex,
+.token.important {
+	color: #fd971f;
+}
+
+.token.important,
+.token.bold {
+	font-weight: bold;
+}
+.token.italic {
+	font-style: italic;
+}
+
+.token.entity {
+	cursor: help;
+}
+/*
+ * New diff- syntax
+ */
+code[class*="language-"], pre[class*="language-"] {
+	font-family: var(--font-family-monospace), monospace;
+}
+
+pre[class*="language-diff-"] {
+	--eleventy-code-padding: 1.25em;
+	padding-left: var(--eleventy-code-padding);
+	padding-right: var(--eleventy-code-padding);
+}
+.token.deleted {
+	background-color: hsl(0, 51%, 37%);
+	color: inherit;
+}
+.token.inserted {
+	background-color: hsl(126, 31%, 39%);
+	color: inherit;
+}
+
+/* Make the + and - characters unselectable for copy/paste */
+.token.prefix.unchanged,
+.token.prefix.inserted,
+.token.prefix.deleted {
+	-webkit-user-select: none;
+	user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+.token.prefix.inserted,
+.token.prefix.deleted {
+	width: var(--eleventy-code-padding);
+	background-color: rgba(0,0,0,.2);
+}
+
+/* Optional: full-width background color */
+.token.inserted:not(.prefix),
+.token.deleted:not(.prefix) {
+	display: block;
+	margin-left: calc(-1 * var(--eleventy-code-padding));
+	margin-right: calc(-1 * var(--eleventy-code-padding));
+	text-decoration: none; /* override del, ins, mark defaults */
+	color: inherit; /* override del, ins, mark defaults */
+}
+/* This is an arbitrary CSS string added to the bundle */
+/* Defaults */
+:root {
+	--font-family: -apple-system, system-ui, sans-serif;
+	--font-family-monospace: Inconsolata, monospace;
+}
+
+/* Theme colors */
+:root {
+	--color-gray-20: #e0e0e0;
+	--color-gray-50: #C0C0C0;
+	--color-gray-90: #dad8d8;
+
+	--background-color: #1f1f1f;
+	--code-color: #709080;
+
+	--text-color: #dcdccc;
+	--text-color-link: #e3ceab;
+	--text-color-link-active: #ecbcbc;
+	--text-color-link-visited: #e3ceab;
+	--syntax-tab-size: 2;
+}
+
+/* Global stylesheet */
+* {
+	box-sizing: border-box;
+}
+
+@view-transition {
+	navigation: auto;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0 auto;
+	font-family: var(--font-family);
+	color: var(--text-color);
+	background-color: var(--background-color);
+}
+html {
+	overflow-y: scroll;
+}
+body {
+	max-width: 40em;
+}
+
+/* https://www.a11yproject.com/posts/how-to-hide-content/ */
+.visually-hidden {
+	clip: rect(0 0 0 0);
+	clip-path: inset(50%);
+	height: 1px;
+	overflow: hidden;
+	position: absolute;
+	white-space: nowrap;
+	width: 1px;
+}
+
+p:last-child {
+	margin-bottom: 0;
+}
+p {
+	line-height: 1.5;
+}
+
+li {
+	line-height: 1.5;
+}
+
+a[href] {
+	color: var(--text-color-link);
+}
+a[href]:visited {
+	color: var(--text-color-link-visited);
+}
+a[href]:hover,
+a[href]:active {
+	color: var(--text-color-link-active);
+}
+
+main,
+footer {
+	padding: 1rem;
+}
+main :first-child {
+	margin-top: 0;
+}
+
+header {
+	border-bottom: 1px dashed var(--color-gray-20);
+}
+header:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+footer {
+	color: var(--color-gray-20);
+	font-size: x-small;
+}
+
+.links-nextprev {
+	display: flex;
+	justify-content: space-between;
+	gap: .5em 1em;
+	list-style: "";
+	border-top: 1px dashed var(--color-gray-20);
+	padding: 1em 0;
+}
+.links-nextprev > * {
+	flex-grow: 1;
+}
+.links-nextprev-next {
+	text-align: right;
+}
+
+table {
+	border-collapse: collapse;
+}
+table :is(td, th) {
+	border:1px dotted var(--color-gray-90);
+	padding: 0.3em 0.5em 0.3em 0.5em;
+	/*padding-right: 0.5em;*/
+	/*padding-left: 0.5em;*/
+	/*padding-right: 1em;*/
+}
+
+pre,
+code {
+	font-family: var(--font-family-monospace);
+}
+pre:not([class*="language-"]) {
+	margin: .5em 0;
+	line-height: 1.375; /* 22px /16 */
+	-moz-tab-size: var(--syntax-tab-size);
+	-o-tab-size: var(--syntax-tab-size);
+	tab-size: var(--syntax-tab-size);
+	-webkit-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+	direction: ltr;
+	text-align: left;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	overflow-x: auto;
+}
+code {
+	color: var(--code-color);
+	word-break: break-all;
+}
+
+/* Header */
+header {
+	display: flex;
+	gap: 1em .5em;
+	flex-wrap: wrap;
+	align-items: center;
+	padding: 1em;
+}
+.home-link {
+	font-size: 1em; /* 16px /16 */
+	font-weight: 700;
+	margin-right: 2em;
+}
+.home-link:link:not(:hover) {
+	text-decoration: none;
+}
+
+/* Nav */
+.nav {
+	display: flex;
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+.nav-item {
+	display: inline-block;
+	margin-right: 1em;
+}
+.nav-item a[href]:not(:hover) {
+	text-decoration: none;
+}
+.nav a[href][aria-current="page"] {
+	text-decoration: underline;
+}
+
+/* Posts list */
+.postlist {
+	list-style: none;
+	padding: 0;
+	padding-left: 1.5rem;
+}
+.postlist-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	counter-increment: start-from -1;
+	margin-bottom: 1em;
+}
+.postlist-item:before {
+	display: inline-block;
+	pointer-events: none;
+	content: "" counter(start-from, decimal-leading-zero) ". ";
+	line-height: 100%;
+	text-align: right;
+	margin-left: -1.5rem;
+}
+.postlist-date,
+.postlist-item:before {
+	font-size: 0.8125em; /* 13px /16 */
+	color: var(--color-gray-90);
+}
+.postlist-date {
+	word-spacing: -0.5px;
+}
+.postlist-link {
+	font-size: 1.1875em; /* 19px /16 */
+	font-weight: 700;
+	flex-basis: calc(100% - 1.5rem);
+	padding-left: .25em;
+	padding-right: .5em;
+	text-underline-position: from-font;
+	text-underline-offset: 0;
+	text-decoration-thickness: 1px;
+}
+.postlist-item-active .postlist-link {
+	font-weight: bold;
+}
+
+/* Tags */
+.post-tag {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	text-transform: capitalize;
+	font-style: italic;
+}
+.postlist-item > .post-tag {
+	align-self: center;
+}
+
+/* Tags list */
+.post-metadata {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: .5em;
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+.post-metadata time {
+	margin-right: 1em;
+}</style>
+	</head>
+	<body>
+		<a href="#skip" class="visually-hidden">Skip to main content</a>
+
+		<header>
+			<a href="/" class="home-link">Roman&#39;s tech blog</a>
+			<nav>
+				<h2 class="visually-hidden" id="top-level-navigation-menu">Top level navigation menu</h2>
+				<ul class="nav">
+					<li class="nav-item"><a href="/blog/0001-post/">About</a></li>
+					<li class="nav-item"><a href="/feed/feed.xml">Feed</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main id="skip">
+			<heading-anchors>
+				
+<h1 id="lightweight-docker-process-supervisor">Lightweight docker process supervisor</h1>
+
+<ul class="post-metadata">
+	<li><time datetime="2026-09-26">26 September 2026</time></li>
+	<li><a href="/tags/docker/" class="post-tag">docker</a>, </li>
+	<li><a href="/tags/supervisor/" class="post-tag">supervisor</a></li>
+</ul>
+
+<p>As mentioned in a previous <a href="/blog/0005-post/">post</a>, I used to use <a href="https://supervisord.org/"><code>supervisord</code></a>
+service to run several daemon processes continuously.</p>
+<p>did the job, but felt like overkill. It is written in Python and provides a lot of functionality I don't really need.</p>
+<p>All I actually need are two things:</p>
+<ol>
+<li>Restart an application if it crashes or exits.</li>
+<li>Capture the application's output and send it to stdout.</li>
+</ol>
+<p>It turns out this can easily be done with a simple Bash script:</p>
+<pre class="language-bash" tabindex="0"><code class="language-bash"><span class="token shebang important">#!/bin/bash</span>
+
+<span class="token comment"># ==========================</span>
+<span class="token comment"># Configuration: list of services</span>
+<span class="token comment"># Each entry: "name command"</span>
+<span class="token comment"># ==========================</span>
+<span class="token assign-left variable">services</span><span class="token operator">=</span><span class="token punctuation">(</span>
+  <span class="token string">"imapfilter-my-super-mailbox /usr/bin/imapfilter -c /path-to-config/_main.lua"</span>
+  <span class="token string">"http-api-server gunicorn -w 1 -k gthread --threads 1 --preload my-super-server:app --log-level error --bind 0.0.0.0:8888"</span>
+<span class="token comment">#  "unstable-service sleep 10"</span>
+<span class="token punctuation">)</span>
+
+<span class="token comment"># Array to keep track of PIDs</span>
+<span class="token assign-left variable">pids</span><span class="token operator">=</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+
+<span class="token comment"># Function to supervise a single service</span>
+<span class="token function-name function">run_service</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token builtin class-name">local</span> <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token string">"<span class="token variable">$1</span>"</span>
+  <span class="token builtin class-name">shift</span>
+  <span class="token builtin class-name">local</span> <span class="token assign-left variable">cmd</span><span class="token operator">=</span><span class="token string">"<span class="token variable">$@</span>"</span>
+
+  <span class="token keyword">while</span> <span class="token boolean">true</span><span class="token punctuation">;</span> <span class="token keyword">do</span>
+    <span class="token builtin class-name">echo</span> <span class="token string">"[<span class="token variable"><span class="token variable">$(</span><span class="token function">date</span> <span class="token string">'+%Y-%m-%d %H:%M:%S'</span><span class="token variable">)</span></span>] Starting <span class="token variable">$name</span>..."</span>
+
+    <span class="token builtin class-name">cd</span> /jobs/bin
+    <span class="token comment"># Run command and wait for it</span>
+    <span class="token variable">$cmd</span>
+    <span class="token assign-left variable">exit_code</span><span class="token operator">=</span><span class="token variable">$?</span>
+
+    <span class="token builtin class-name">echo</span> <span class="token string">"[<span class="token variable"><span class="token variable">$(</span><span class="token function">date</span> <span class="token string">'+%Y-%m-%d %H:%M:%S'</span><span class="token variable">)</span></span>] <span class="token variable">$name</span> exited with code <span class="token variable">$exit_code</span>. Restarting..."</span>
+    <span class="token function">sleep</span> <span class="token number">3</span>  <span class="token comment"># optional backoff</span>
+  <span class="token keyword">done</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment"># Function to stop all background services gracefully</span>
+<span class="token function-name function">shutdown</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+  <span class="token builtin class-name">echo</span> <span class="token string">"[<span class="token variable"><span class="token variable">$(</span><span class="token function">date</span> <span class="token string">'+%Y-%m-%d %H:%M:%S'</span><span class="token variable">)</span></span>] Caught termination signal. Stopping services..."</span>
+  <span class="token keyword">for</span> <span class="token for-or-select variable">pid</span> <span class="token keyword">in</span> <span class="token string">"<span class="token variable">${pids<span class="token punctuation">[</span>@<span class="token punctuation">]</span>}</span>"</span><span class="token punctuation">;</span> <span class="token keyword">do</span>
+    <span class="token function">kill</span> <span class="token string">"<span class="token variable">$pid</span>"</span> <span class="token operator"><span class="token file-descriptor important">2</span>></span>/dev/null <span class="token operator">||</span> <span class="token boolean">true</span>
+  <span class="token keyword">done</span>
+  <span class="token function">wait</span>
+  <span class="token builtin class-name">echo</span> <span class="token string">"[<span class="token variable"><span class="token variable">$(</span><span class="token function">date</span> <span class="token string">'+%Y-%m-%d %H:%M:%S'</span><span class="token variable">)</span></span>] All services stopped. Exiting."</span>
+  <span class="token builtin class-name">exit</span> <span class="token number">0</span>
+<span class="token punctuation">}</span>
+
+<span class="token comment"># Trap termination signals</span>
+<span class="token builtin class-name">trap</span> <span class="token function">shutdown</span> SIGTERM SIGINT
+
+<span class="token comment"># Start all services in background</span>
+<span class="token keyword">for</span> <span class="token for-or-select variable">svc</span> <span class="token keyword">in</span> <span class="token string">"<span class="token variable">${services<span class="token punctuation">[</span>@<span class="token punctuation">]</span>}</span>"</span><span class="token punctuation">;</span> <span class="token keyword">do</span>
+  <span class="token assign-left variable">name</span><span class="token operator">=</span><span class="token variable"><span class="token variable">$(</span><span class="token builtin class-name">echo</span> $svc <span class="token operator">|</span> <span class="token function">awk</span> <span class="token string">'{print $1}'</span><span class="token variable">)</span></span>
+  <span class="token assign-left variable">cmd</span><span class="token operator">=</span><span class="token variable"><span class="token variable">$(</span><span class="token builtin class-name">echo</span> $svc <span class="token operator">|</span> <span class="token function">cut</span> -d<span class="token string">' '</span> -f2-<span class="token variable">)</span></span>
+
+  run_service <span class="token string">"<span class="token variable">$name</span>"</span> <span class="token variable">$cmd</span> <span class="token operator">&amp;</span>
+  <span class="token assign-left variable">pids</span><span class="token operator">+=</span><span class="token punctuation">(</span><span class="token variable">$!</span><span class="token punctuation">)</span>
+<span class="token keyword">done</span>
+
+<span class="token comment"># Wait for all background services</span>
+<span class="token function">wait</span></code></pre>
+<p>Run it with <code>tini</code>, and you have a container that can run your custom daemons:</p>
+<pre class="language-Dockerfile" tabindex="0"><code class="language-Dockerfile">FROM debian:trixie-slim
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+    tini ca-certificates curl bc \
+    python3 python3-requests \
+    imapfilter \
+    lego \
+    gunicorn python3-flask  \
+    python3-feedparser python3-feedgen \
+    python3-websocket \
+    python3-redis \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/my/path/to/supervisor.sh"]</code></pre>
+<p>The only feature missing for now is log separation by process. The services I am running are stable
+enough that I haven't bothered implementing it.</p>
+
+<ul class="links-nextprev"><li class="links-nextprev-prev"><a href="/blog/0005-post/">← Cron-like scheduler for docker</a></li>
+</ul>
+
+			</heading-anchors>
+		</main>
+
+		<footer>
+			<p><em>Built with <a href="https://www.11ty.dev/">Eleventy v3.1.6</a></em></p>
+		</footer>
+
+		<!-- This page `/blog/0006-post/` was built on 2026-09-26T10:00:15.177Z -->
+		<script type="module" src="/dist/cC8wS6ZjFU.js"></script>
+	</body>
+</html>
